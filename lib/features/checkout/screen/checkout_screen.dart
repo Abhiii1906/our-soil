@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:razorpay_web/razorpay_web.dart';
 
 
+import '../../../core/config/themes/app_color.dart';
 import '../../cart/screen/cart_screen.dart';
 
 // Assuming cartItems is defined globally as in your previous code
@@ -158,6 +159,312 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildShippingSection(),
+                const SizedBox(height: 32),
+                _buildPaymentSection(),
+                const SizedBox(height: 32),
+                _buildOrderSummary(),
+                const SizedBox(height: 32),
+                _buildOrderButton(),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: AppColor.primaryColor,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Checkout',
+        style: GoogleFonts.poppins(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShippingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Shipping Address',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.blueGrey[800],
+          ),
+        ).animate().fadeIn(delay: 200.ms),
+        const SizedBox(height: 16),
+        _buildTextField(
+          controller: _fullNameController,
+          label: 'Full Name',
+          icon: Icons.person,
+          delay: 400,
+          validatorText: 'Please enter your full name',
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          controller: _streetAddressController,
+          label: 'Street Address',
+          icon: Icons.home,
+          delay: 600,
+          maxLines: 2,
+          validatorText: 'Please enter your street address',
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                controller: _cityController,
+                label: 'City',
+                delay: 800,
+                validatorText: 'Please enter your city',
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildTextField(
+                controller: _stateController,
+                label: 'State',
+                delay: 1000,
+                validatorText: 'Please enter your state',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                controller: _zipCodeController,
+                label: 'Zip Code',
+                delay: 1200,
+                inputType: TextInputType.number,
+                validatorText: 'Please enter your zip code',
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildTextField(
+                controller: _countryController,
+                label: 'Country',
+                delay: 1400,
+                validatorText: 'Please enter your country',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? validatorText,
+    IconData? icon,
+    int delay = 0,
+    int maxLines = 1,
+    TextInputType inputType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: inputType,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(
+          color: AppColor.grey,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: AppColor.lightGrey,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: AppColor.primaryColor,
+            width: 2,
+          ),
+        ),
+        prefixIcon: icon != null
+            ? Icon(
+          icon,
+          color: AppColor.primaryColor,
+        )
+            : null,
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validatorText;
+        }
+        return null;
+      },
+    ).animate().fadeIn(delay: Duration(milliseconds: delay)).slideX(begin: -0.2, end: 0.0);
+  }
+
+
+  Widget _buildPaymentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Payment Method',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.blueGrey[800],
+          ),
+        ).animate().fadeIn(delay: 1600.ms),
+        const SizedBox(height: 16),
+        ..._paymentMethods.map((method) {
+          return RadioListTile<String>(
+            title: Text(
+              method,
+              style: GoogleFonts.poppins(fontSize: 16, color: Colors.blueGrey[800]),
+            ),
+            value: method,
+            groupValue: _selectedPaymentMethod,
+            onChanged: (value) {
+              setState(() {
+                _selectedPaymentMethod = value;
+              });
+            },
+            activeColor: Colors.blueGrey,
+          ).animate().fadeIn(
+              delay: Duration(milliseconds: 1800 + (_paymentMethods.indexOf(method) * 200)));
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildOrderSummary() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Order Summary',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.blueGrey[800],
+          ),
+        ).animate().fadeIn(delay: 2200.ms),
+        const SizedBox(height: 16),
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ...cartItems.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final item = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${item.name} (x${item.quantity})',
+                          style: GoogleFonts.poppins(fontSize: 14, color: Colors.blueGrey[800]),
+                        ),
+                        Text(
+                          '₹${(item.price * item.quantity).toStringAsFixed(2)}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blueGrey[800],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: Duration(milliseconds: 2400 + (index * 200)));
+                }),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total Price:',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blueGrey[800],
+                      ),
+                    ),
+                    Text(
+                      '₹${totalPrice.toStringAsFixed(2)}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blueGrey[800],
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(delay: const Duration(milliseconds: 2800)),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOrderButton() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey),
+        ),
+      );
+    }
+
+    return ElevatedButton(
+      onPressed: _handleOrderPlacement,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColor.primaryColor,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        _selectedPaymentMethod == 'Cash on Delivery' ? 'Place Order' : 'Make Payment',
+        style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
+      ),
+    ).animate().fadeIn(delay: const Duration(milliseconds: 3000));
+  }
+
+
+/*
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -494,4 +801,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ),
     );
   }
+
+   */
 }
+
+
+
+
+
+
+
+

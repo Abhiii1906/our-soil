@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'core/config/route/app_route.dart';
+import 'core/storage/secure_storage.dart';
 
 void main() {
+  Preference();
   runApp(const MyApp());
 }
 

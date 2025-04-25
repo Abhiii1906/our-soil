@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../config/themes/app_color.dart';
@@ -10,8 +11,8 @@ class InputTextField extends StatefulWidget {
   final String hintText;
   final bool isSecret;
   final bool obscureText;
-  final Widget ? suffixIcon;
-  final Color ? bgColor;
+  final Widget? suffixIcon;
+  final Color? bgColor;
   final TextInputType inputType;
 
   const InputTextField({
@@ -45,7 +46,8 @@ class _InputTextFieldState extends State<InputTextField> {
       children: [
         Text(
           widget.labelText,
-          style: AppFonts.body.copyWith(fontWeight: FontWeight.w600,color: AppColor.black),
+          style: AppFonts.body
+              .copyWith(fontWeight: FontWeight.w600, color: AppColor.black),
         ),
         SizedBox(height: 6.h),
         TextFormField(
@@ -53,37 +55,39 @@ class _InputTextFieldState extends State<InputTextField> {
           obscureText: __isSecret,
           keyboardType: widget.inputType,
           obscuringCharacter: '*',
-          style: AppFonts.caption.copyWith(fontWeight: FontWeight.w600,color: AppColor.black),
+          style: AppFonts.caption
+              .copyWith(fontWeight: FontWeight.w600, color: AppColor.black),
           decoration: InputDecoration(
             hintText: widget.hintText,
-            hintStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w400,color: AppColor.grey ),
+            hintStyle: AppFonts.caption
+                .copyWith(fontWeight: FontWeight.w400, color: AppColor.grey),
             filled: true, // Background fill
-            fillColor:AppColor.grey.withOpacity(0.1),
+            fillColor: AppColor.grey.withOpacity(0.1),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r), // Rounded corners
               borderSide: BorderSide.none, // No border line
             ),
-            focusedBorder:  OutlineInputBorder(
+            focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(color: Colors.grey[100]!),
             ),
             suffixIcon: widget.isSecret == true
                 ? GestureDetector(
-              onTap: () {
-                setState(() {
-                  __isSecret = !__isSecret;
-                });
-              },
-              child: __isSecret
-                  ? const Icon(
-                Icons.visibility_off,
-                color: AppColor.grey,
-              )
-                  : const Icon(
-                Icons.visibility,
-                color: AppColor.grey,
-              ),
-            )
+                    onTap: () {
+                      setState(() {
+                        __isSecret = !__isSecret;
+                      });
+                    },
+                    child: __isSecret
+                        ? const Icon(
+                            Icons.visibility_off,
+                            color: AppColor.grey,
+                          )
+                        : const Icon(
+                            Icons.visibility,
+                            color: AppColor.grey,
+                          ),
+                  )
                 : widget.suffixIcon,
           ),
         ),
@@ -92,15 +96,13 @@ class _InputTextFieldState extends State<InputTextField> {
   }
 }
 
-
-
 class InputField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
   final bool isSecret;
   final bool obscureText;
-  final Widget ? suffixIcon;
-  final Color ? bgColor;
+  final Widget? suffixIcon;
+  final Color? bgColor;
   final TextInputType inputType;
 
   const InputField({
@@ -129,43 +131,46 @@ class _InputFieldState extends State<InputField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-          controller: widget.controller,
-          obscureText: __isSecret,
-          keyboardType: widget.inputType,
-          obscuringCharacter: '*',
-          style: AppFonts.caption.copyWith(fontWeight: FontWeight.w600,color: AppColor.black),
-          decoration: InputDecoration(
-            hintText: widget.hintText,
-            hintStyle: AppFonts.caption.copyWith(fontWeight: FontWeight.w400,color: AppColor.grey ),
-            filled: true, // Background fill
-            fillColor:AppColor.grey.withOpacity(0.1),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.r), // Rounded corners
-              borderSide: BorderSide.none, // No border line
-            ),
-            focusedBorder:  OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.r),
-              borderSide: BorderSide(color: Colors.grey[100]!),
-            ),
-            suffixIcon: widget.isSecret == true
-                ? GestureDetector(
-              onTap: () {
-                setState(() {
-                  __isSecret = !__isSecret;
-                });
-              },
-              child: __isSecret
-                  ? const Icon(
-                Icons.visibility_off,
-                color: AppColor.grey,
+      controller: widget.controller,
+      obscureText: __isSecret,
+      keyboardType: widget.inputType,
+      obscuringCharacter: '*',
+      style: AppFonts.caption
+          .copyWith(fontWeight: FontWeight.w600, color: AppColor.black),
+      decoration: InputDecoration(
+        hintText: widget.hintText,
+        hintStyle: AppFonts.caption
+            .copyWith(fontWeight: FontWeight.w400, color: AppColor.grey),
+        filled: true, // Background fill
+        fillColor: AppColor.grey.withOpacity(0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r), // Rounded corners
+          borderSide: BorderSide.none, // No border line
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.r),
+          borderSide: BorderSide(color: Colors.grey[100]!),
+        ),
+        suffixIcon: widget.isSecret == true
+            ? GestureDetector(
+                onTap: () {
+                  setState(() {
+                    __isSecret = !__isSecret;
+                  });
+                },
+                child: __isSecret
+                    ? const Icon(
+                        Icons.visibility_off,
+                        color: AppColor.grey,
+                      )
+                    : const Icon(
+                        Icons.visibility,
+                        color: AppColor.grey,
+                      ),
               )
-                  : const Icon(
-                Icons.visibility,
-                color: AppColor.grey,
-              ),
-            )
-                : widget.suffixIcon,
-          ),
-        );
+            : widget.suffixIcon,
+      ),
+    );
   }
 }
+

@@ -1,6 +1,7 @@
 import 'package:e_shop/features/cart/screen/cart_screen.dart';
 import 'package:e_shop/features/checkout/screen/checkout_screen.dart';
 import 'package:e_shop/features/home/screen/home_screen.dart';
+import 'package:e_shop/features/onboarding/screen/landing_screen.dart';
 import 'package:e_shop/features/product_details/screen/product_detail_screen.dart';
 import 'package:flutter/material.dart';
 import '../../../features/ authentication/screen/login_screen.dart';
@@ -11,6 +12,8 @@ class AppRoute{
   Route onGenerateRoute(RouteSettings settings){
     switch(settings.name){
       case '/':
+        return MaterialPageRoute(builder: (_) => LandingScreen());
+      case '/Home':
         return MaterialPageRoute(builder: (_) => HomeScreen());
       case '/login':
         return MaterialPageRoute(builder: (_) => LoginScreen());
@@ -21,7 +24,11 @@ class AppRoute{
       case '/checkout':
         return MaterialPageRoute(builder: (_) => CheckoutScreen());
       case '/product-details':
-        return MaterialPageRoute(builder: (_) => ProductDetailsScreen());
+        Map ? argument = settings.arguments as Map ?;
+       
+        return MaterialPageRoute(builder: (_) => ProductDetailsScreen(
+          productId: argument!['productId'],
+        ));
 
 
       default:

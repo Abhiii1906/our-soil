@@ -30,6 +30,7 @@ class LoginResponseModel {
 
 class Record {
   String avatar;
+  String collectionId;
   String collectionName;
   String email;
   bool emailVisibility;
@@ -40,6 +41,7 @@ class Record {
 
   Record({
     required this.avatar,
+    required this.collectionId,
     required this.collectionName,
     required this.email,
     required this.emailVisibility,
@@ -51,6 +53,7 @@ class Record {
 
   factory Record.fromJson(Map<String, dynamic> json) => Record(
     avatar: json["avatar"],
+    collectionId: json["collectionId"],
     collectionName: json["collectionName"],
     email: json["email"],
     emailVisibility: json["emailVisibility"],
@@ -62,6 +65,7 @@ class Record {
 
   Map<String, dynamic> toJson() => {
     "avatar": avatar,
+    "collectionId":collectionId,
     "collectionName": collectionName,
     "email": email,
     "emailVisibility": emailVisibility,

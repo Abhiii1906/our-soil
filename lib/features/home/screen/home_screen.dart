@@ -1,151 +1,172 @@
 import 'package:e_shop/core/config/route/app_route.dart';
+import 'package:e_shop/core/network/base_network.dart';
+import 'package:e_shop/core/utils/logger.dart';
 import 'package:e_shop/features/cart/screen/cart_screen.dart';
-import 'package:e_shop/features/product_details/screen/product_detail_screen.dart';
+import 'package:e_shop/features/home/bloc/category/category_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-// Home Screen
-class HomeScreen extends StatelessWidget {
+import '../../ authentication/screen/login_screen.dart';
+import '../../../core/config/resource/images.dart';
+import '../../../core/config/themes/app_color.dart';
+import '../../../core/network/api_connection.dart';
+import '../../../core/storage/preference_key.dart';
+import '../../../core/storage/secure_storage.dart';
+import '../../../core/widgets/category_card.dart';
+import '../../../core/widgets/category_filter.dart';
+import '../../../core/widgets/product_card.dart';
+import '../bloc/product/product_bloc.dart';
+import '../repository/category.repository.dart';
+import '../repository/product.repository.dart';
 
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  static const route = '/Home';
+   HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+/*
+class _HomeScreenState extends State<HomeScreen> {
+  final pref = Preference();
+
+  late CategoryBloc _categoryBloc;
+  late ProductBloc _productBloc;
+
+  String _searchQuery = '';
+  String _selectedCategory = '';
+
+  @override
+  void initState() {
+    _categoryBloc = CategoryBloc(
+      CategoryRepository(
+          api: ApiConnection()
+      ),
+    );
+    _categoryBloc.add(FetchCategoriesEvent());
+
+    _productBloc = ProductBloc(
+      ProductRepository(
+          api: ApiConnection()
+      ),
+    );
+    _productBloc.add(FetchProductsEvent(sort: '-created'));
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _categoryBloc.close();
+    // TODO: implement
+    //  dispose
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColor.white,
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey[700],
-        title: Row(
-          children: [
-            SvgPicture.string(
-              '''
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20ZM12 6C10.34 6 9 7.34 9 9C9 10.66 10.34 12 12 12C13.66 12 15 10.66 15 9C15 7.34 13.66 6 12 6ZM12 14C9.24 14 7 16.24 7 19H17C17 16.24 14.76 14 12 14Z" fill="#FFFFFF"/>
-              </svg>
-              ''',
-              width: 32,
-              height: 32,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              'E-Shop',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+        backgroundColor: AppColor.primaryColor,
+        iconTheme: const IconThemeData(color: AppColor.white),
+        elevation: 0,
+        titleSpacing: 16,
+        title: LayoutBuilder(
+          builder: (context, constraints) {
+            double maxWidth = constraints.maxWidth;
+
+            // Dynamically adjust logo size based on screen width
+            double logoHeight = maxWidth >= 1024
+                ? 50
+                : maxWidth >= 600
+                ? 42
+                : 36;
+
+            return SizedBox(
+              height: logoHeight,
+              child: Image.asset(
+                Images.logo,
+                fit: BoxFit.contain,
               ),
-            ),
-          ],
+            );
+          },
         ),
         actions: [
-          // Search Bar
-          SizedBox(
-            width: MediaQuery.of(context).size.width > 600 ? 300 : 200,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                hintStyle: GoogleFonts.poppins(color: Colors.white70),
-                filled: true,
-                fillColor: Colors.blueGrey[600],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(Icons.search, color: Colors.white),
-              ),
-              style: GoogleFonts.poppins(color: Colors.white),
-              onSubmitted: (value) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Searching for: $value')),
-                );
+          if (MediaQuery.of(context).size.width > 360)
+            TextButton.icon(
+              onPressed: () {
+                AppRoute.goToNextPage(context: context, screen: LoginScreen.route, arguments: {});
               },
+              icon: const Icon(Icons.login, color: AppColor.white),
+              label: Text(
+                'Login',
+                style: GoogleFonts.poppins(
+                  color: AppColor.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            )
+          else
+            IconButton(
+              onPressed: () {
+                AppRoute.goToNextPage(context: context, screen: LoginScreen.route, arguments: {});
+              },
+              icon: const Icon(Icons.login, color: AppColor.white),
             ),
-          ),
-          const SizedBox(width: 16),
           IconButton(
-            icon: const Icon(Icons.person, color: Colors.white),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile clicked')),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.shopping_cart, color: Colors.white),
+            tooltip: 'Cart',
+            icon: const Icon(Icons.shopping_cart, color: AppColor.white),
             onPressed: () {
               AppRoute.goToNextPage(context: context, screen: CartScreen.route, arguments: {});
-              // ScaffoldMessenger.of(context).showSnackBar(
-              //   const SnackBar(content: Text('Cart clicked')),
-              // );
             },
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
         ],
       ),
+
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blueGrey[700],
+                color: AppColor.primaryColor,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 30,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 40, color: Colors.blueGrey),
+                    backgroundColor: AppColor.white,
+                    child: Image.network(pref.getString(Keys.AVATAR)),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'John Doe',
+                    pref.getString(Keys.NAME).toString(),
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColor.white,
                     ),
                   ),
                   Text(
-                    'john.doe@example.com',
+                    pref.getString(Keys.EMAIL).toString(),
                     style: GoogleFonts.poppins(
                       fontSize: 14,
-                      color: Colors.white70,
+                      color: AppColor.white.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
             ),
+            _drawerItem(Icons.person, 'Profile', context),
+            _drawerItem(Icons.history, 'Order History', context),
             ListTile(
-              leading: const Icon(Icons.person, color: Colors.blueGrey),
-              title: Text(
-                'Profile',
-                style: GoogleFonts.poppins(),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile clicked')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.history, color: Colors.blueGrey),
-              title: Text(
-                'Order History',
-                style: GoogleFonts.poppins(),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Order History clicked')),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.blueGrey),
+              leading: const Icon(Icons.logout, color: AppColor.primaryColor),
               title: Text(
                 'Logout',
                 style: GoogleFonts.poppins(),
@@ -161,306 +182,488 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner Section
-            Container(
-              height: 400.h,
-              width: double.infinity,
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80',
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
+            SizedBox(height: 16.h),
+
+            // 🔍 BEAUTIFUL SEARCH BAR
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.black.withOpacity(0.5),
-                      Colors.transparent,
-                    ],
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Big Sale!',
-                        style: GoogleFonts.poppins(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Up to 50% off on selected items',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ).animate().fadeIn(duration: 600.ms),
-
-            // Categories Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Shop by Category',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueGrey[800],
-                ),
-              ),
-            ).animate().fadeIn(delay: 800.ms),
-            SizedBox(
-              height: 120,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                children: const [
-                  CategoryCard(
-                    title: 'Electronics',
-                    imageUrl:
-                    'https://images.unsplash.com/photo-1498049794561-4ab15d5436b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                  ),
-                  CategoryCard(
-                    title: 'Fashion',
-                    imageUrl:
-                    'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                  ),
-                  CategoryCard(
-                    title: 'Home',
-                    imageUrl:
-                    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                  ),
-                  CategoryCard(
-                    title: 'Beauty',
-                    imageUrl:
-                    'https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(delay: 1000.ms),
-
-            // Featured Products Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(
-                'Featured Products',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blueGrey[800],
-                ),
-              ),
-            ).animate().fadeIn(delay: 1200.ms),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = constraints.maxWidth > 1200
-                    ? 4
-                    : constraints.maxWidth > 800
-                    ? 3
-                    : constraints.maxWidth > 600
-                    ? 2
-                    : 1;
-                return GridView.count(
-                  crossAxisCount: crossAxisCount,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16.0),
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  // childAspectRatio: 1,
-                  children: const [
-                    ProductCard(
-                      name: 'Smartphone',
-                      price: 699.99,
-                      imageUrl:
-                      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                    ),
-                    ProductCard(
-                      name: 'Headphones',
-                      price: 99.99,
-                      imageUrl:
-                      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                    ),
-                    ProductCard(
-                      name: 'Laptop',
-                      price: 1299.99,
-                      imageUrl:
-                      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
-                    ),
-                    ProductCard(
-                      name: 'Sneakers',
-                      price: 79.99,
-                      imageUrl:
-                      'https://images.unsplash.com/photo-1607522370275-f14206abe5d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                  color: AppColor.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
-                );
-              },
-            ).animate().fadeIn(delay: 1400.ms),
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search for glass, pots...',
+                    hintStyle: GoogleFonts.poppins(
+                      color: AppColor.grey,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: const Icon(Icons.search, color: AppColor.grey),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onSubmitted: (query) {
+                    setState(() => _searchQuery = query);
+                    _productBloc.add(
+                      FetchProductsEvent(
+                        sort: '-created',
+                        search: _searchQuery,
+                        categoryId: _selectedCategory,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            SizedBox(height: 16.h),
+
+            BlocProvider(
+              create: (context) => _categoryBloc,
+              child: BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (context, state) {
+                  if (state is CategoryLoadingState) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is CategoryLoadedState) {
+                    final categories = state.categories.items;
+                    // 🪄 Add "All" option as the first filter
+                    final filters = [
+                      Filter(label: 'All', isSelected: true,id: ''), // default selection
+                      ...categories.map((cat) => Filter(label: cat.name,id: cat.collectionId)),
+                    ];
+                    return FilterOptionWidget(
+                      filters: filters,
+                        onSelected: (value) {
+                          debugPrint('Selected: $value');
+
+                          // Rebuild filters list with updated selection
+                          final updatedFilters = filters.map((f) {
+                            return Filter(
+                              iconPath: f.iconPath,
+                              label: f.label,
+                              id: f.id,
+                              isSelected: f.id == value,
+                            );
+                          }).toList();
+
+                          _selectedCategory = value;
+
+                          _productBloc.add(
+                            FetchProductsEvent(
+                              sort: '-created',
+                              search: _searchQuery,
+                              categoryId: _selectedCategory,
+                            ),
+                          );
+
+                          setState(() {
+                            // Rebuild with updated filters
+                            filters
+                              ..clear()
+                              ..addAll(updatedFilters);
+                          });
+                        }
+
+                    ).animate().fadeIn(delay: 1000.ms);
+                  } else if (state is CategoryErrorState) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(child:  Text("Failed to load categories: ${state.data.message ?? 'Something went wrong'}")),
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
+            ),
+
+            BlocProvider(
+              create: (context) => _productBloc,
+              child: BlocBuilder<ProductBloc, ProductState>(
+                builder: (context, state) {
+                  if (state is ProductLoadingState) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is ProductLoadedState) {
+                    final products = state.products.items;
+
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        final width = constraints.maxWidth;
+
+                        final crossAxisCount = width >= 1024
+                            ? 4 // Desktop
+                            : width >= 600
+                            ? 3 // Tablet
+                            : 2; // Mobile
+
+                        final childAspectRatio= width >= 1024
+                            ?1.0
+                            : width >= 600
+                            ? 0.6 // Tablet: more natural layout
+                            : 0.65;
+
+                        return  Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: GridView.builder(
+                            shrinkWrap: true, // 🛟 ADD THIS
+                            physics: const NeverScrollableScrollPhysics(), // 🛑 Prevent internal scrolling
+                            itemCount: products.length,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: childAspectRatio,
+                            ),
+                            itemBuilder: (context, index) {
+                              final product = products[index];
+
+                              return ProductCard(
+                                name: product.name ?? 'Unknown',
+                                price: double.tryParse(product.price.toString()) ?? 0.0,
+                                imageUrl: BaseNetwork.getPocketBaseImageUrl(
+                                  collectionId: product.collectionId,
+                                  recordId: product.id,
+                                  fileName: product.image.first,
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  } else if (state is ProductErrorState) {
+                    return Center(
+                      child: Text(state.data.message ?? "Something went wrong"),
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
     );
   }
-}
 
-// Category Card Widget
-class CategoryCard extends StatelessWidget {
-  final String title;
-  final String imageUrl;
-
-  const CategoryCard({super.key, required this.title, required this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
+  Widget _drawerItem(IconData icon, String title, BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: AppColor.primaryColor),
+      title: Text(title, style: GoogleFonts.poppins()),
       onTap: () {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Category: $title clicked')),
+          SnackBar(content: Text('$title clicked')),
         );
       },
-      child: Container(
-        width: 100,
-        margin: const EdgeInsets.only(right: 16),
-        child: Column(
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.blueGrey[800],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
 
-// Product Card Widget
-class ProductCard extends StatelessWidget {
-  final String name;
-  final double price;
-  final String imageUrl;
+ */
 
-  const ProductCard({
-    super.key,
-    required this.name,
-    required this.price,
-    required this.imageUrl,
-  });
+class _HomeScreenState extends State<HomeScreen> {
+  final pref = Preference();
+
+  late final CategoryBloc _categoryBloc;
+  late final ProductBloc _productBloc;
+
+  String _searchQuery = '';
+  String _selectedCategory = '';
+
+  @override
+  void initState() {
+    super.initState();
+
+    _categoryBloc = CategoryBloc(CategoryRepository(api: ApiConnection()));
+    _productBloc = ProductBloc(ProductRepository(api: ApiConnection()));
+
+    _categoryBloc.add(FetchCategoriesEvent());
+    _productBloc.add(FetchProductsEvent(sort: '-created'));
+  }
+
+  @override
+  void dispose() {
+    _categoryBloc.close();
+    _productBloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        AppRoute.goToNextPage(context: context, screen: ProductDetailsScreen.route, arguments: {});
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text('Product: $name clicked')),
-        // );
-      },
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 250.h,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.blueGrey[800],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '\₹${price.toStringAsFixed(2)}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.blueGrey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Spacer(),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: const Icon(Icons.add_shopping_cart, color: Colors.blueGrey),
-                      onPressed: () {
-                        cartItems.add(CartItem(
-                          name: name,
-                          price: price,
-                          imageUrl: imageUrl,
-                        ));
-                        // Force rebuild to update cart badge
-                        (context as Element).markNeedsBuild();
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(content: Text('$name added to cart')),
-                        // );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _categoryBloc),
+        BlocProvider.value(value: _productBloc),
+      ],
+      child: Scaffold(
+        backgroundColor: AppColor.white,
+        appBar: _buildAppBar(context),
+        drawer: _buildDrawer(context),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              16.verticalSpace,
+              _buildSearchBar(),
+              16.verticalSpace,
+              _buildCategoryFilter(),
+              _buildProductGrid(),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  AppBar _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: AppColor.primaryColor,
+      iconTheme: const IconThemeData(color: AppColor.white),
+      elevation: 0,
+      titleSpacing: 16,
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          double width = constraints.maxWidth;
+          double logoHeight = width >= 1024 ? 50 : width >= 600 ? 42 : 36;
+          return SizedBox(
+            height: logoHeight,
+            child: Image.asset(Images.logo, fit: BoxFit.contain),
+          );
+        },
+      ),
+      actions: [
+        if (MediaQuery.of(context).size.width > 360)
+          TextButton.icon(
+            onPressed: () => AppRoute.goToNextPage(context: context, screen: LoginScreen.route, arguments: {}),
+            icon: const Icon(Icons.login, color: AppColor.white),
+            label: Text('Login', style: GoogleFonts.poppins(color: AppColor.white, fontWeight: FontWeight.w500)),
+          )
+        else
+          IconButton(
+            onPressed: () => AppRoute.goToNextPage(context: context, screen: LoginScreen.route, arguments: {}),
+            icon: const Icon(Icons.login, color: AppColor.white),
+          ),
+        IconButton(
+          tooltip: 'Cart',
+          icon: const Icon(Icons.shopping_cart, color: AppColor.white),
+          onPressed: () => AppRoute.goToNextPage(context: context, screen: CartScreen.route, arguments: {}),
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: AppColor.primaryColor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: AppColor.white,
+                  backgroundImage: NetworkImage(pref.getString(Keys.AVATAR)),
+                ),
+                const SizedBox(height: 8),
+                Text(pref.getString(Keys.NAME).toString(),
+                    style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600, color: AppColor.white)),
+                Text(pref.getString(Keys.EMAIL).toString(),
+                    style: GoogleFonts.poppins(fontSize: 14, color: AppColor.white.withOpacity(0.7))),
+              ],
+            ),
+          ),
+          _drawerItem(Icons.person, 'Profile', context),
+          _drawerItem(Icons.history, 'Order History', context),
+          ListTile(
+            leading: const Icon(Icons.logout, color: AppColor.primaryColor),
+            title: Text('Logout', style: GoogleFonts.poppins()),
+            onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerItem(IconData icon, String title, BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: AppColor.primaryColor),
+      title: Text(title, style: GoogleFonts.poppins()),
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$title clicked')));
+      },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColor.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: TextField(
+          decoration: InputDecoration(
+            hintText: 'Search for glass, pots...',
+            hintStyle: GoogleFonts.poppins(color: AppColor.grey, fontSize: 14),
+            prefixIcon: const Icon(Icons.search, color: AppColor.grey),
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          onSubmitted: (query) {
+            setState(() => _searchQuery = query);
+            _fetchProducts();
+          },
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildCategoryFilter() {
+    return BlocBuilder<CategoryBloc, CategoryState>(
+      builder: (context, state) {
+        if (state is CategoryLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is CategoryLoadedState) {
+          final categories = state.categories.items;
+
+          // 🪄 Add "All" option as the first filter
+          final filters = [
+            Filter(label: 'All', isSelected: true), // default selection
+            ...categories.map((cat) => Filter(label: cat.name)),
+          ];
+
+          return FilterOptionWidget(
+            filters: filters,
+            onSelected: (label) {
+              debugPrint('Selected category: $label');
+              // Find selected category ID
+              String selectedId = '';
+              if (label != 'All') {
+                final selected = categories.firstWhere(
+                      (c) => c.name == label,
+                  orElse: () => categories.first,
+                );
+                selectedId = selected.id;
+                debugPrint('Selected category: $selectedId');
+              }
+
+                _selectedCategory = selectedId;
+
+                _productBloc.add(
+                  FetchProductsEvent(
+                    sort: '-created',
+                    search: _searchQuery,
+                    categoryId: _selectedCategory,
+                  ),
+                );
+              // Optional: Handle "All" category logic here
+            },
+          ).animate().fadeIn(delay: 1000.ms);
+        } else if (state is CategoryErrorState) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Center(
+              child: Text("Failed to load categories: ${state.data.message ?? 'Something went wrong'}"),
+            ),
+          );
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+
+
+  Widget _buildProductGrid() {
+    return BlocBuilder<ProductBloc, ProductState>(
+      builder: (context, state) {
+        if (state is ProductLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is ProductLoadedState) {
+          final products = state.products.items;
+
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
+              final crossAxisCount = width >= 1024
+                  ? 4
+                  : width >= 600
+                  ? 3
+                  : 2;
+
+              final childAspectRatio = width >= 1024
+                  ? 1.0
+                  : width >= 600
+                  ? 0.6
+                  : 0.65;
+
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: products.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: childAspectRatio,
+                  ),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return ProductCard(
+                      id: product.id,
+                      name: product.name ?? 'Unknown',
+                      price: double.tryParse(product.price.toString()) ?? 0.0,
+                      imageUrl: BaseNetwork.getPocketBaseImageUrl(
+                        collectionId: product.collectionId,
+                        recordId: product.id,
+                        fileName: product.image.first,
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        } else if (state is ProductErrorState) {
+          return Center(child: Text(state.data.message ?? "Something went wrong"));
+        } else {
+          return const SizedBox.shrink();
+        }
+      },
+    );
+  }
+
+  void _fetchProducts() {
+    _productBloc.add(FetchProductsEvent(
+      sort: '-created',
+      search: _searchQuery,
+      categoryId: _selectedCategory,
+    ));
+  }
 }
+
+
