@@ -1,6 +1,7 @@
 import 'package:e_shop/core/config/route/app_route.dart';
 import 'package:e_shop/features/home/screen/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -228,6 +229,7 @@ class _LandingScreenState extends State<LandingScreen> {
                           key: _formKey,
                           child: isMobile
                               ? Column(
+                                  spacing: 10.h,
                                   children:
                                       _buildFormFields(), // Mobile: Stack in column
                                 )
